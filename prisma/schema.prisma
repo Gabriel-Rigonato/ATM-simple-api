@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Physical_person {
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid()) @db.VarChar(80)
+  document      String         @db.VarChar(80)
+  name          String         @db.VarChar(80)
+  phone         String?         @db.VarChar(80)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  deleted_at    DateTime?
+
+  user      User[]
+
+  @@map("physical_persons")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  uuid             String    @unique @default(uuid()) @db.VarChar(80)
+  physical_person_id        Int
+  username         String    @db.VarChar(80)
+  password         String    @db.VarChar(255)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
+
+  physical_person Physical_person @relation(fields: [physical_person_id], references: [id])
+  Account Account[]
+
+  @@map("users")
+}
+
+model Account {
+  id             Int              @id @default(autoincrement())
+  uuid           String           @default(uuid()) @db.VarChar(65)
+  user_id         Int             @unique
+  agency_number   Int
+  account_number  BigInt
+  digit_account   Int
+  created_at      DateTime         @default(now())
+  updated_at      DateTime        @updatedAt
+  deleted_at      DateTime?        @db.Timestamp(0)
+
+  user  User @relation(fields: [user_id], references: [id])
+  Balance Balance[]
+  @@map("accounts")
+}
+
+model Balance {
+  id         Int        @id @default(autoincrement())
+  uuid       String     @default(uuid()) @db.VarChar(65)
+  active     Boolean    @default(true)
+  balance    Decimal    @db.Decimal(15, 6)
+  account_id Int        @unique
+  user_id    Int
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  deleted_at DateTime?  @db.Timestamp(0)
+
+  account Account  @relation(fields: [account_id], references: [id])
+  @@map("balances")
+}
