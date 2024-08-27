@@ -23,6 +23,8 @@ export class WithdrawService implements IWithdrawService {
 
     async execute(value: number): Promise<any>{
 
+        let allMoneyRescued = 0;
+
         const atmInfo = await this.iFetchATMService.getATMinfo();
 
         if(value > parseFloat(atmInfo.balance)){
@@ -50,7 +52,20 @@ export class WithdrawService implements IWithdrawService {
         
         await this.rescueMoney(value, atmInfo);
 
-        return notes;
+        notes.map((money) => {
+            let result = 0;
+   
+            result = result + (parseFloat(money.value) * money.quantityUsed)
+   
+            allMoneyRescued += result;
+   
+            return result;
+         })
+
+        return {
+            "valor retirado: ": allMoneyRescued,
+            "notas": notes
+        };
     }
 
     async rescueMoney(value: number, atm: any): Promise<any>{

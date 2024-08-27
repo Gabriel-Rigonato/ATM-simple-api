@@ -13,6 +13,8 @@ export class ATMController {
    async withdrawMoney(@Body() data: any): Promise<object | any>{
 
       const moneyRedeemed = await this.iWithdrawService.execute(Math.round(Math.floor(data.value) / 10) * 10);
+
       return moneyRedeemed;
+
    }
 }
