@@ -4,13 +4,13 @@ const prisma = new PrismaClient()
 async function main() {
   const atm = await prisma.atm.create({
     data:{
-        balance: 10000.00,
+        balance: 100000.00,
     }
   })
 
   const bankNote20 = await prisma.bankNotes.create({
     data:{
-        quantity: 100,
+        quantity: 1000,
         value: 20.00,
         atm_id: 1
     }
@@ -18,7 +18,7 @@ async function main() {
 
   const bankNote50 = await prisma.bankNotes.create({
     data:{
-        quantity: 100,
+        quantity: 1000,
         value: 50.00,
         atm_id: 1
     }
@@ -26,7 +26,7 @@ async function main() {
 
   const bankNote100 = await prisma.bankNotes.create({
     data:{
-        quantity: 30,
+        quantity: 300,
         value: 100.00,
         atm_id: 1
     }
