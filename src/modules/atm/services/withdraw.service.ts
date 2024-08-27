@@ -92,15 +92,51 @@ export class WithdrawService implements IWithdrawService {
     
             if (remainingValue === 0) break;
         }
-    
-        if (remainingValue > 0) {
+
+    if (Math.floor(remainingValue) > 0) {
+
+        if (remainingValue === 10 || remainingValue === 30) {
+        
+            let note20 = atm.BankNotes.find(n => n.value == 20);
+        
+            let note50 = atm.BankNotes.find(n => n.value == 50);
+
+            let note100 = result.find(r => r.value == 100);
+
+            if (note100 && note50 && note50.quantity > 0 && note20 && note20.quantity >= (remainingValue / 20)) {
+
+                note100.quantityUsed -= 1;
+                remainingValue += 100;
+                atm.BankNotes.find(n => n.uuid === note100.uuid).quantity += 1;
+
+                result.push({
+                    uuid: note50.uuid,
+                    value: 50,
+                    quantityUsed: 1
+                });
+
+                remainingValue -= 50;
+                note50.quantity -= 1;
+
+                let notes20Needed = Math.floor(remainingValue / 20);
+                result.push({
+                    uuid: note20.uuid,
+                    value: 20,
+                    quantityUsed: notes20Needed
+                });
+
+                remainingValue -= notes20Needed * 20;
+                note20.quantity -= notes20Needed;
+            }
+        }
+    }
+    if (Math.floor(remainingValue) > 0) {
             throw new ApplicationException(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 '001',
                 'Não é possível fornecer o valor solicitado com as notas disponíveis.'
             )
         }
-    
         return result;
     }
 
