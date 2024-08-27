@@ -21,7 +21,7 @@ export class WithdrawService implements IWithdrawService {
         private readonly iUpdateBankNoteService: IUpdateBankNoteService 
     ){}
 
-    async execute(value: number): Promise<any>{
+    async execute(value: number): Promise<object>{
 
         let allMoneyRescued = 0;
 

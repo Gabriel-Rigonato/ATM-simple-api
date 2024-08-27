@@ -12,7 +12,7 @@ export class BankNoteRepository extends BaseRepository implements IBankNoteRepos
         super(prismaService)
     }
     
-    async findByUuid(uuid: string) : Promise<any>{
+    async findByUuid(uuid: string) : Promise<object>{
 
         const atmBalance = await this.prismaService.bankNotes.findFirst({
             where:{
