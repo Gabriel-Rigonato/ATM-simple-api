@@ -21,7 +21,13 @@ export class ATMRepository extends BaseRepository implements IATMRepository {
             select:{
                 uuid: true, 
                 balance: true,
-                BankNotes: true
+                BankNotes: {
+                    select:{
+                        uuid: true,
+                        quantity: true,
+                        value: true
+                    }
+                }
             }
         });
 

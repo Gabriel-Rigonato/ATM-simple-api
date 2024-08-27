@@ -6,11 +6,13 @@ import { ATM_REPOSITORY_INTERFACE } from "./interfaces/repositories/iatm.reposit
 import { ATMRepository } from "./repositories/atm.repository";
 import { WITHDRAW_SERVICE_INTERFACE } from "./interfaces/services/iwithdraw.service";
 import { WithdrawService } from "./services/withdraw.service";
+import { BankNoteModule } from "../bank-note/bank-note.module";
 
 
 @Module({
     imports:[
-        CoreModule
+        CoreModule,
+        BankNoteModule
     ],
     providers:[
         {provide: ATM_REPOSITORY_INTERFACE, useClass: ATMRepository},

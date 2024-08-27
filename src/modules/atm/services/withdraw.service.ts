@@ -3,16 +3,22 @@ import { FETCH_ATM_SERVICE_INTERFACE, IFetchATMService } from "../interfaces/ser
 import { ApplicationException } from "src/modules/core/exceptions/application.exception";
 import { ATM_REPOSITORY_INTERFACE, IATMRepository } from "../interfaces/repositories/iatm.repository";
 import { IWithdrawService } from "../interfaces/services/iwithdraw.service";
+import { FETCH_BANK_NOTE_SERVICE_INTERFACE, IFetchBankNoteService } from "src/modules/bank-note/interfaces/services/ifetch-bank-note.service";
+import { IUpdateBankNoteService, UPDATE_BANK_NOTE_SERVICE_INTERFACE } from "src/modules/bank-note/interfaces/services/iupdate-bank-note.service";
 
 @Injectable()
-export class WithdrawService implements IWithdrawService{ 
+export class WithdrawService implements IWithdrawService { 
 
     constructor(
         @Inject(ATM_REPOSITORY_INTERFACE)
         private readonly iATMRepository: IATMRepository,
         
         @Inject(FETCH_ATM_SERVICE_INTERFACE)
-        private readonly iFetchATMService: IFetchATMService 
+        private readonly iFetchATMService: IFetchATMService,
+        @Inject(FETCH_BANK_NOTE_SERVICE_INTERFACE)
+        private readonly iFetchBankNoteService: IFetchBankNoteService,
+        @Inject(UPDATE_BANK_NOTE_SERVICE_INTERFACE)
+        private readonly iUpdateBankNoteService: IUpdateBankNoteService 
     ){}
 
     async execute(value: number): Promise<any>{
@@ -27,9 +33,24 @@ export class WithdrawService implements IWithdrawService{
             )
         }
 
-        const moneyRedeemed = await this.rescueMoney(value, atmInfo);
+        const notes = await this.calculateNotes(value, atmInfo);
 
-        return moneyRedeemed;
+        await notes.map(async (note) => {
+
+            const bankNote = await this.iFetchBankNoteService.getByUuid(note.uuid);
+
+            const data = {
+                uuid: bankNote.uuid,
+                quantity: parseFloat(bankNote.quantity) - note.quantityUsed
+            }
+
+            await this.iUpdateBankNoteService.update(data);
+
+        })
+        
+        await this.rescueMoney(value, atmInfo);
+
+        return notes;
     }
 
     async rescueMoney(value: number, atm: any): Promise<any>{
@@ -45,4 +66,42 @@ export class WithdrawService implements IWithdrawService{
 
         return money;
     }
+
+    async calculateNotes(value: number, atm: any): Promise<any>{
+
+        let result = [];
+        let remainingValue = value;
+    
+        atm.BankNotes.sort((a, b) => b.value - a.value);
+    
+        for (let i = 0; i < atm.BankNotes.length; i++) {
+    
+            let notes = atm.BankNotes[i];
+            let notesNeeded = Math.min(Math.floor(remainingValue / notes.value), notes.quantity);
+    
+            if (notesNeeded > 0) {
+                result.push({ 
+                    uuid: notes.uuid,
+                    value: notes.value, 
+                    quantityUsed: notesNeeded 
+                });
+    
+                remainingValue -= notesNeeded * notes.value;
+                notes.quantity -= notesNeeded;
+            }
+    
+            if (remainingValue === 0) break;
+        }
+    
+        if (remainingValue > 0) {
+            throw new ApplicationException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                '001',
+                'Não é possível fornecer o valor solicitado com as notas disponíveis.'
+            )
+        }
+    
+        return result;
+    }
+
 }
