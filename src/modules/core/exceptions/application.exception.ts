@@ -5,7 +5,6 @@ export class ApplicationException extends HttpException {
       httpStatusCode: HttpStatus,
       error_code: string,
       error_message: string,
-      description: string
    ) {
       super(
          {
@@ -14,7 +13,6 @@ export class ApplicationException extends HttpException {
             status: 'error',
             error_code,
             message: error_message,
-            description,
          },
          httpStatusCode,
       )

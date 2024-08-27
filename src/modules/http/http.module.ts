@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
-import { UserHttpModule } from "./user/user-http.module";
+import { ATMHttpModule } from "./atm/atm-http.module";
 
 @Module({
     imports:[
-        UserHttpModule
+        ATMHttpModule
     ]
 })
 
